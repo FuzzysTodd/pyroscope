@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "pyroscope-dev": {
+      "command": "node",
+      "args": [
+        "/path/to/pyroscope-mcp-server/build/index.js"
+      ],
+      "env": {
+        "PYROSCOPE_URL": "http://localhost:4040",
+        "LOG_LEVEL": "info"
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    }
+  }
+}

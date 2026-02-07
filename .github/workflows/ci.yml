@@ -17,8 +17,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  health-check:
+    runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64-small' || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          persist-credentials: false
+      - name: Install Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version: 1.24.9
+      - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
+        with:
+          node-version: 20
+          cache: yarn
+      - name: Run Workflow Health Check
+        run: |
+          chmod +x .github/scripts/workflow-health-check.sh
+          .github/scripts/workflow-health-check.sh
+        continue-on-error: true
+      - name: Display Environment Info
+        run: |
+          echo "::group::Environment Information"
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Runner OS: ${{ runner.os }}"
+          echo "Go Version: $(go version)"
+          echo "Node Version: $(node --version)"
+          echo "Yarn Version: $(yarn --version)"
+          echo "::endgroup::"
   format:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64-large' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -32,6 +65,7 @@ jobs:
         run: make fmt check/unstaged-changes
   check-generated:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64-large' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -44,6 +78,7 @@ jobs:
       - name: Check generated files
         run: make generate check/unstaged-changes
   test:
+    needs: [health-check]
     strategy:
       fail-fast: false
       matrix:
@@ -70,6 +105,7 @@ jobs:
         run: make go/test
   lint:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64-large' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -147,6 +183,7 @@ jobs:
           common_secrets: |
             DOCKERHUB_USERNAME=dockerhub:username
             DOCKERHUB_PASSWORD=dockerhub:password
+        continue-on-error: false
       - uses: docker/login-action@465a07811f14bebb1938fbed4728c6a1ff8901fc # v2
         name: Login to Docker Hub
         with:
@@ -155,11 +192,24 @@ jobs:
       - name: Pyroscope Build & push multi-arch image
         id: build-push
         run: |
+          set -euo pipefail
+          echo "::group::Building multi-arch image"
           make docker-image/pyroscope/push-multiarch "BUILDX_ARGS=--cache-from=type=gha --cache-to=type=gha"
+          echo "::endgroup::"
       - name: Get image, image tag and image digest
         id: push-metadata
         run: |
+          set -euo pipefail
+          if [ ! -f ./.docker-image-name-pyroscope ]; then
+            echo "::error::Docker image name file not found"
+            exit 1
+          fi
+          if [ ! -f ./.docker-image-digest-pyroscope ]; then
+            echo "::error::Docker image digest file not found"
+            exit 1
+          fi
           image=$(cat ./.docker-image-name-pyroscope)
+          echo "::notice::Built image: ${image}"
           echo "image=${image}" >> "$GITHUB_OUTPUT"
           echo "image-tag=${image#*:}" >> "$GITHUB_OUTPUT"
           echo "image-digest=$(cat ./.docker-image-digest-pyroscope)" >> "$GITHUB_OUTPUT"
@@ -172,6 +222,13 @@ jobs:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64-small' || 'ubuntu-latest' }}
     needs: [build-push]
     steps:
+    - name: Log deployment info
+      run: |
+        echo "::group::Deployment Information"
+        echo "Image Tag: ${{ needs.build-push.outputs.image-tag }}"
+        echo "Image Digest: ${{ needs.build-push.outputs.image-digest }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "::endgroup::"
     - id: "submit-argowfs-deployment"
       name: "Submit Argo Workflows deployment"
       uses: grafana/shared-workflows/actions/trigger-argo-workflow@c8ac4a279df46ebd1f85064119a0835098b88092
@@ -183,4 +240,5 @@ jobs:
           commit=${{ github.sha }}
     - name: Print URI
       run: |
+        echo "::notice::Deployment URI: ${{ steps.submit-argowfs-deployment.outputs.uri }}"
         echo "URI: ${{ steps.submit-argowfs-deployment.outputs.uri }}"
