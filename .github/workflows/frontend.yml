@@ -13,8 +13,28 @@ concurrency:
 permissions:
   contents: read
 jobs:
+  health-check:
+    runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64' || 'ubuntu-latest' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: 'false'
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 20
+          cache: yarn
+      - name: Display Environment Info
+        run: |
+          echo "::group::Frontend Environment Information"
+          echo "Repository: ${{ github.repository }}"
+          echo "Node Version: $(node --version)"
+          echo "Yarn Version: $(yarn --version)"
+          echo "npm Version: $(npm --version)"
+          echo "::endgroup::"
   type-check:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -24,11 +44,19 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - run: yarn --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          echo "::group::Installing dependencies"
+          yarn --frozen-lockfile
+          echo "::endgroup::"
       - name: Run type-check
-        run: yarn type-check
+        run: |
+          echo "::group::Type checking"
+          yarn type-check
+          echo "::endgroup::"
   format:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -38,11 +66,19 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - run: yarn --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          echo "::group::Installing dependencies"
+          yarn --frozen-lockfile
+          echo "::endgroup::"
       - name: Run format
-        run: yarn run format
+        run: |
+          echo "::group::Checking formatting"
+          yarn run format
+          echo "::endgroup::"
   lint:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -52,11 +88,19 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - run: yarn --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          echo "::group::Installing dependencies"
+          yarn --frozen-lockfile
+          echo "::endgroup::"
       - name: Run lint
-        run: yarn lint
+        run: |
+          echo "::group::Linting"
+          yarn lint
+          echo "::endgroup::"
   build:
     runs-on: ${{ github.repository_owner == 'grafana' && 'ubuntu-x64' || 'ubuntu-latest' }}
+    needs: [health-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -66,6 +110,20 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - run: yarn --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          echo "::group::Installing dependencies"
+          yarn --frozen-lockfile
+          echo "::endgroup::"
       - name: Run build
-        run: yarn build
+        run: |
+          echo "::group::Building frontend"
+          yarn build
+          echo "::endgroup::"
+      - name: Verify build output
+        run: |
+          if [ ! -d "public/build" ] && [ ! -d "dist" ] && [ ! -d "build" ]; then
+            echo "::warning::Build output directory not found in expected locations"
+          else
+            echo "::notice::Build completed successfully"
+          fi
