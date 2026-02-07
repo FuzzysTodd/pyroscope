@@ -184,7 +184,7 @@ Review the workflow graph in GitHub Actions UI to identify:
 
 ```bash
 # Clone the repository
-git clone https://github.com/FuzzysTodd/pyroscope.git
+git clone https://github.com/grafana/pyroscope.git
 cd pyroscope
 
 # Run health check

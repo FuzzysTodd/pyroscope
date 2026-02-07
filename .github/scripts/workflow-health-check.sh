@@ -100,8 +100,18 @@ check_go_version() {
     log_info "Required Go version: $required_version+"
     log_info "Toolchain Go version: $toolchain_version"
     
-    # Basic version check (this is simplified)
-    if [[ "$go_version" < "$required_version" ]]; then
+    # Version comparison: extract major.minor.patch and compare
+    local go_major=$(echo "$go_version" | cut -d. -f1)
+    local go_minor=$(echo "$go_version" | cut -d. -f2)
+    local go_patch=$(echo "$go_version" | cut -d. -f3)
+    local req_major=$(echo "$required_version" | cut -d. -f1)
+    local req_minor=$(echo "$required_version" | cut -d. -f2)
+    local req_patch=$(echo "$required_version" | cut -d. -f3)
+    
+    # Compare versions numerically
+    if [ "$go_major" -lt "$req_major" ] || \
+       ([ "$go_major" -eq "$req_major" ] && [ "$go_minor" -lt "$req_minor" ]) || \
+       ([ "$go_major" -eq "$req_major" ] && [ "$go_minor" -eq "$req_minor" ] && [ "$go_patch" -lt "$req_patch" ]); then
         log_warn "Go version might be too old. Required: $required_version+, Found: $go_version"
     else
         log_info "Go version: ✓"

@@ -5,7 +5,7 @@
 
 ## Problems Addressed
 
-### 1. MPC (Model Context Protocol) Integration ✅
+### 1. MCP (Model Context Protocol) Integration ✅
 - Created `.github/mcp-server-config.json` with configuration for:
   - Pyroscope development server
   - GitHub integration server

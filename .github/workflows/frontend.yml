@@ -122,8 +122,9 @@ jobs:
           echo "::endgroup::"
       - name: Verify build output
         run: |
-          if [ ! -d "public/build" ] && [ ! -d "dist" ] && [ ! -d "build" ]; then
-            echo "::warning::Build output directory not found in expected locations"
-          else
-            echo "::notice::Build completed successfully"
+          # Frontend build outputs to public/build (configured in webpack.common.js)
+          if [ ! -d "public/build" ]; then
+            echo "::error::Build output directory 'public/build' not found"
+            exit 1
           fi
+          echo "::notice::Build completed successfully - output in public/build"
