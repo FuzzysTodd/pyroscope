@@ -155,6 +155,12 @@ Pyroscope is possible thanks to the excellent work of many people, including but
 
 To start contributing, check out our [Contributing Guide](docs/internal/contributing/README.md)
 
+### CI/CD and Workflow Information
+
+If you're working with GitHub Actions workflows, see:
+- [Workflow Troubleshooting Guide](.github/docs/WORKFLOW_TROUBLESHOOTING.md) - Comprehensive guide for diagnosing and fixing workflow issues
+- [GitHub Configuration Overview](.github/README.md) - Overview of CI/CD setup and requirements
+
 
 ### Thanks to the contributors of Pyroscope!
 
