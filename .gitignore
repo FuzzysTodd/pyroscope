@@ -21,10 +21,12 @@ data-metastore/
 **/dist
 
 # IDE
-.cursor
 .idea
 .vscode
 .zed
+pyroscope.sln
+.cursor/*
+!.cursor/rules/
 
 # Frontend
 public/build
@@ -51,3 +53,11 @@ yarn-error.log
 
 /.tmp
 tools/k6/.env
+
+# API Keys and Secrets
+.env
+.env.local
+*.key
+.api-key
+api-key.txt
+
