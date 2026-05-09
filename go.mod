@@ -88,12 +88,6 @@ require (
 	go.uber.org/goleak v1.3.0
 	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
-	golang.org/x/mod v0.29.0
-	golang.org/x/net v0.47.0
-	golang.org/x/oauth2 v0.31.0
-	golang.org/x/sync v0.18.0
-	golang.org/x/sys v0.38.0
-	golang.org/x/text v0.31.0
 	golang.org/x/mod v0.31.0
 	golang.org/x/net v0.48.0
 	golang.org/x/oauth2 v0.34.0
@@ -327,10 +321,10 @@ require (
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/image v0.25.0 // indirect
-	golang.org/x/term v0.37.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/term v0.38.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	google.golang.org/api v0.239.0 // indirect
 	google.golang.org/genproto v0.0.0-20250505200425-f936aa4a68b2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
